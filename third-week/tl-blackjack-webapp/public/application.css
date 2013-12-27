@@ -1,0 +1,10 @@
+li {
+  display: inline-block;
+}
+
+.cards-div {
+  background-color: #F5F5F5;
+  border: 1px solid #E3E3E3;
+  border-radius: 5px;
+  padding: 5px;
+}

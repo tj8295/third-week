@@ -1,10 +1,25 @@
+
+
 <h4>Hi <%= session[:player_name] %>!</h4>
 
-Your cards are:
-<ul>
-<% session[:player_cards].each do |card| %>
-  <li><%= card.to_s %></li>
-<% end %>
-</ul>
-Your total is <%= calculate_total(session[:player_cards]) %>
-
+<br />
+<div class="cards-div">
+  <h4>Dealer's cards:</h4>
+  <ul>
+    <% session[:dealer_cards].each do |card| %>
+      <li><img src="/images/cards/<%= image_string(card) %>" /></li>
+      <li><%= card.to_s %></li>
+     <% end %>
+  </ul>
+</div>
+<br />
+<div class="cards-div">
+  <h4><%= session[:player_name] %>'s cards:</h4>
+  <ul>
+  <% session[:player_cards].each do |card| %>
+    <li><img src="/images/cards/<%= image_string(card) %>" /></li>
+    <li><%= card.to_s %></li>
+  <% end %>
+  </ul>
+  Your total is <%= calculate_total(session[:player_cards]) %>
+</div>
