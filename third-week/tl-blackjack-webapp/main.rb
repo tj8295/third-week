@@ -120,6 +120,7 @@ post '/game/player/hit' do
 end
 
 post '/game/player/stay' do
+  # Not sure where this line comes from, the @success will not be available in redirect.
   @success = "#{session[:player_name]} has chosen to stay"
   redirect '/game/dealer'
 end
@@ -149,6 +150,23 @@ post '/game/dealer/hit' do
     redirect 'game/dealer'
 end
 
+get '/game/compare/' do
+     @show_dealer_hit_button = false
+     @show_hit_or_stay_buttons = false
+     @play_again = true
+
+    player_total = calculate_total(session[:player_cards])
+    dealer_total = calculate_total(session[:dealer_cards])
+
+    if dealer_total > player_total
+      @error = "Sorry, dealer wins."
+    elsif player_total > dealer_total
+      @success = "Congrautlations, you win."
+    else
+      @success = "Push. There was a tie"
+     end
+     erb :game
+end # route end
 
 # get '/test' do
 #   @my_var = "Tom"

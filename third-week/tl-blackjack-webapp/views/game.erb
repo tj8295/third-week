@@ -9,7 +9,9 @@
   <%= card_image(card) %>
   <% end %>
 <% if @show_dealer_hit_button %>
-  <p>Dealer has: <%= calculate_total(session[:dealer_cards]) %></p>
+  <p>
+    <h5>Dealer has: <%= calculate_total(session[:dealer_cards]) %> and will hit.</h5>
+  </p>
   <form action="/game/dealer/hit" method="post">
     <input type="submit" class='btn btn-primary' value='Click to see dealer card ->' />
   </form>
