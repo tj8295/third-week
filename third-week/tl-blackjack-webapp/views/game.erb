@@ -1,42 +1,45 @@
 <h1>Blackjack!</h1>
-
 <p>Welcome <%= session[:player_name] %>!</p>
-
 <br />
 <div class="well">
   <h4>Dealer's cards:</h4>
-  <% session[:dealer_cards].each do |card| %>
-  <%= card_image(card) %>
+  <% if @show_dealer_whole_card %>
+    <% session[:dealer_cards].each do |card| %>
+    <%= card_image(card) %>
+    <% end %>
+  <% else %>
+    <img src='/images/cards/cover.jpg' class='card_image'/>
+    <%= card_image(session[:dealer_cards][1]) %>
   <% end %>
-<% if @show_dealer_hit_button %>
-  <p>
-    <h5>Dealer has: <%= calculate_total(session[:dealer_cards]) %> and will hit.</h5>
-  </p>
-  <form action="/game/dealer/hit" method="post">
-    <input type="submit" class='btn btn-primary' value='Click to see dealer card ->' />
-  </form>
-<% end %>
+  <% if @show_dealer_hit_button %>
+    <p>
+      <h5>Dealer has: <%= calculate_total(session[:dealer_cards]) %> and will hit.</h5>
+    </p>
+    <form action="/game/dealer/hit" method="post">
+      <input type="submit" class='btn btn-primary' value='Click to see dealer card ->' />
+    </form>
+  <% end %>
 </div>
 <br />
 <div class="well">
   <h4><%= session[:player_name] %>'s cards:</h4>
   <% session[:player_cards].each do |card| %>
-  <%= card_image(card) %>
+    <%= card_image(card) %>
   <% end %>
 </div>
 What would you like to do?
 <p><%= session[:player_name]  %> has <%= calculate_total(session[:player_cards]) %>
   <% if @show_hit_or_stay_buttons %>
-  <form id="hit_form" action="/game/player/hit" method="post">
-    <input type='submit' class='btn btn-success' value="Hit" />
-  </form>
-  <form id="stay_form" action="/game/player/stay" method="post">
-    <input type='submit' class='btn btn-warning' value="Stay" />
-  </form>
+    <form id="hit_form" action="/game/player/hit" method="post">
+      <input type='submit' class='btn btn-success' value="Hit" />
+    </form>
+    <form id="stay_form" action="/game/player/stay" method="post">
+      <input type='submit' class='btn btn-warning' value="Stay" />
+    </form>
   <% end %>
   <% if @play_again %>
-  <form action="/game">
-    <input type='submit' class='btn' value="Play again" />
-  </form>
+    <form action="/game">
+      <input type='submit' class='btn' value="Play again" />
+    </form>
   <% end %>
 </p>

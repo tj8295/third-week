@@ -49,8 +49,19 @@ helpers do
 
   end # end image string method
 
-  def dealer_blackjack
+  def winner!(msg)
+    @success = "<strong>#{session[:player_name]} wins.</strong> #{msg}"
+    @show_hit_or_stay_buttons = false
+  end
 
+  def loser!(msg)
+    @error = "<strong>Sorry #{session[:player_name]} lost.</strong> #{msg}"
+    @show_hit_or_stay_buttons = false
+  end
+
+  def tie!
+    @success = "<strong>It's a tie</strong>"
+    @show_hit_or_stay_buttons = false
   end
 end # end helpers
 
@@ -60,6 +71,7 @@ before do
   @bust = false
   @play_again = false
   @dealer_turn = false
+  @show_dealer_whole_card = true
 end
 
 get '/' do
@@ -85,35 +97,34 @@ post '/new_player' do
 end
 
 get '/game' do
+  @show_dealer_whole_card = false
 
-    suits = ['H', 'D', 'S', 'C']
-    cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-    session[:deck] = suits.product(cards).shuffle!
+  suits = ['H', 'D', 'S', 'C']
+  cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+  session[:deck] = suits.product(cards).shuffle!
 
-    session[:player_cards] = []
-    session[:dealer_cards] = []
+  session[:player_cards] = []
+  session[:dealer_cards] = []
 
-    session[:player_cards] << session[:deck].pop
-    session[:dealer_cards] << session[:deck].pop
-    session[:player_cards] << session[:deck].pop
-    session[:dealer_cards] << session[:deck].pop
-
+  session[:player_cards] << session[:deck].pop
+  session[:dealer_cards] << session[:deck].pop
+  session[:player_cards] << session[:deck].pop
+  session[:dealer_cards] << session[:deck].pop
 
   erb :game
 end
 
 post '/game/player/hit' do
+  @show_dealer_whole_card = false
   session[:player_cards] << session[:deck].pop
 
   player_total = calculate_total(session[:player_cards])
   if player_total == 21
-    @success = "Blackjack #{session[:player_name]} wins!"
-    @show_hit_or_stay_buttons = false
+    winner!("#{session[:player_name]} hit blackjack!")
     @play_again = true
   end
   if player_total > 21
-    @error = "Sorry #{session[:player_name]} busted."
-    @show_hit_or_stay_buttons = false
+    loser!("#{session[:player_name]} busted at #{player_total}.")
     @play_again = true
   end
   erb :game
@@ -132,9 +143,9 @@ get '/game/dealer' do
   # decision tree
   dealer_total = calculate_total(session[:dealer_cards])
   if dealer_total == 21
-    @error = "Sorry Dealer hit blackjack dealer wins!"
+    loser!("Dealer hit blackjack, dealer wins!")
   elsif dealer_total > 21
-    @success = "Congrautlations, dealer busts, you win!"
+    winner!("Dealer busts at #{dealer_total}")
   elsif dealer_total >= 17
     #dealer stays
     redirect 'game/compare/'
@@ -151,21 +162,22 @@ post '/game/dealer/hit' do
 end
 
 get '/game/compare/' do
-     @show_dealer_hit_button = false
-     @show_hit_or_stay_buttons = false
-     @play_again = true
+  @show_dealer_hit_button = false
+  @show_hit_or_stay_buttons = false
+  @play_again = true
 
-    player_total = calculate_total(session[:player_cards])
-    dealer_total = calculate_total(session[:dealer_cards])
+  player_total = calculate_total(session[:player_cards])
+  dealer_total = calculate_total(session[:dealer_cards])
 
-    if dealer_total > player_total
-      @error = "Sorry, dealer wins."
-    elsif player_total > dealer_total
-      @success = "Congrautlations, you win."
-    else
-      @success = "Push. There was a tie"
-     end
-     erb :game
+  if dealer_total > player_total
+    loser!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.")
+  elsif player_total > dealer_total
+    winner!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.")
+  else
+    tie!("Both #{session[:player_name]} and the dealer stayed at #{player_total}.")
+  end
+
+  erb :game
 end # route end
 
 # get '/test' do
