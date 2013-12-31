@@ -3,6 +3,8 @@ require 'sinatra'
 require 'pry'
 
 set :sessions, true
+BLACKJACK_AMOUNT = 21
+DEALER_MIN_HIT = 17
 
 helpers do
   def calculate_total(cards)
@@ -21,7 +23,7 @@ helpers do
 
     # correct for aces
     arr.select { |e| e == 'A' }.count.times do
-      total -= 10 if total > 21
+      total -= 10 if total > BLACKJACK_AMOUNT
     end
 
     total
@@ -52,16 +54,21 @@ helpers do
   def winner!(msg)
     @success = "<strong>#{session[:player_name]} wins.</strong> #{msg}"
     @show_hit_or_stay_buttons = false
+    @play_again = true
+
   end
 
   def loser!(msg)
     @error = "<strong>Sorry #{session[:player_name]} lost.</strong> #{msg}"
     @show_hit_or_stay_buttons = false
+    @play_again = true
+
   end
 
   def tie!
     @success = "<strong>It's a tie</strong>"
     @show_hit_or_stay_buttons = false
+    @play_again = true
   end
 end # end helpers
 
@@ -70,8 +77,6 @@ before do
   @blackjack = false
   @bust = false
   @play_again = false
-  @dealer_turn = false
-  @show_dealer_whole_card = true
 end
 
 get '/' do
@@ -92,11 +97,17 @@ post '/new_player' do
     halt erb(:new_player)
   end
 
+  if params[:player_name][/^[a-zA-Z]+$/].nil?
+    @error = "Please use only a single name and only alpha numeric"
+    halt erb(:new_player)
+  end
+
   session[:player_name] = params[:player_name]
   redirect '/game'
 end
 
 get '/game' do
+  session[:turn] = session[:player_name]
   @show_dealer_whole_card = false
 
   suits = ['H', 'D', 'S', 'C']
@@ -119,13 +130,11 @@ post '/game/player/hit' do
   session[:player_cards] << session[:deck].pop
 
   player_total = calculate_total(session[:player_cards])
-  if player_total == 21
+  if player_total == BLACKJACK_AMOUNT
     winner!("#{session[:player_name]} hit blackjack!")
-    @play_again = true
   end
-  if player_total > 21
+  if player_total > BLACKJACK_AMOUNT
     loser!("#{session[:player_name]} busted at #{player_total}.")
-    @play_again = true
   end
   erb :game
 end
@@ -138,15 +147,16 @@ end
 
 
 get '/game/dealer' do
+  session[:turn] = "dealer"
   @show_hit_or_stay_buttons = false
 
   # decision tree
   dealer_total = calculate_total(session[:dealer_cards])
-  if dealer_total == 21
+  if dealer_total == BLACKJACK_AMOUNT
     loser!("Dealer hit blackjack, dealer wins!")
-  elsif dealer_total > 21
+  elsif dealer_total > BLACKJACK_AMOUNT
     winner!("Dealer busts at #{dealer_total}")
-  elsif dealer_total >= 17
+  elsif dealer_total >= DEALER_MIN_HIT
     #dealer stays
     redirect 'game/compare/'
   else
@@ -164,7 +174,6 @@ end
 get '/game/compare/' do
   @show_dealer_hit_button = false
   @show_hit_or_stay_buttons = false
-  @play_again = true
 
   player_total = calculate_total(session[:player_cards])
   dealer_total = calculate_total(session[:dealer_cards])
@@ -180,18 +189,8 @@ get '/game/compare/' do
   erb :game
 end # route end
 
-# get '/test' do
-#   @my_var = "Tom"
-#   erb :test
-# end
-
-  # redirect '/'
-    # "From the testing action." + params[:some].to_s
-
-
-
-get '/form' do
-  erb :form
+get '/game_over' do
+  erb :game_over
 end
 
 post '/myaction' do

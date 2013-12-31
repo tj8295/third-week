@@ -1,16 +1,21 @@
 <h1>Blackjack!</h1>
 <p>Welcome <%= session[:player_name] %>!</p>
-<br />
+<% if @play_again %>
+  <p>
+    <strong>Play again?</strong>
+    <a href="/game" class="btn btn-primary">Yes</a>
+    <a href="/game_over" class="btn">No</a>
+  </p>
+<% end %>
 <div class="well">
   <h4>Dealer's cards:</h4>
-  <% if @show_dealer_whole_card %>
-    <% session[:dealer_cards].each do |card| %>
-    <%= card_image(card) %>
+    <% session[:dealer_cards].each_with_index do |card, i| %>
+      <% if session[:turn] != "dealer" && i == 0 %>
+        <img src='/images/cards/cover.jpg' class='card_image'/>
+      <% else %>
+        <%= card_image(card) %>
+      <% end %>
     <% end %>
-  <% else %>
-    <img src='/images/cards/cover.jpg' class='card_image'/>
-    <%= card_image(session[:dealer_cards][1]) %>
-  <% end %>
   <% if @show_dealer_hit_button %>
     <p>
       <h5>Dealer has: <%= calculate_total(session[:dealer_cards]) %> and will hit.</h5>
@@ -35,11 +40,6 @@ What would you like to do?
     </form>
     <form id="stay_form" action="/game/player/stay" method="post">
       <input type='submit' class='btn btn-warning' value="Stay" />
-    </form>
-  <% end %>
-  <% if @play_again %>
-    <form action="/game">
-      <input type='submit' class='btn' value="Play again" />
     </form>
   <% end %>
 </p>
