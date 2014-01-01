@@ -92,15 +92,18 @@ get '/new_player' do
 end
 
 post '/new_player' do
-  if params[:player_name].strip.empty?
+  user_input = params[:player_name]
+
+  if user_input.strip.empty?
     @error = "Please input name"
     halt erb(:new_player)
   end
 
-  if params[:player_name][/^[a-zA-Z]+$/].nil?
-    @error = "Please use only a single name and only alpha numeric"
-    halt erb(:new_player)
-  end
+  # #problem here with the backslash character for white space
+  # if user_input["/^[a-zA-Z]+$/"].nil?
+  #   @error = "Please use only a single name and only alpha numeric"
+  #   halt erb(:new_player)
+  # end
 
   session[:player_name] = params[:player_name]
   redirect '/game'
@@ -136,7 +139,7 @@ post '/game/player/hit' do
   if player_total > BLACKJACK_AMOUNT
     loser!("#{session[:player_name]} busted at #{player_total}.")
   end
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/player/stay' do
