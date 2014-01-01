@@ -55,18 +55,18 @@ helpers do
     @success = "<strong>#{session[:player_name]} wins.</strong> #{msg}"
     @show_hit_or_stay_buttons = false
     @play_again = true
-
+    session[:purse] += session[:bet_amount]
   end
 
   def loser!(msg)
     @error = "<strong>Sorry #{session[:player_name]} lost.</strong> #{msg}"
     @show_hit_or_stay_buttons = false
     @play_again = true
-
+    session[:purse] -= session[:bet_amount]
   end
 
-  def tie!
-    @success = "<strong>It's a tie</strong>"
+  def tie!(msg)
+    @success = "<strong>It's a tie</strong> #{msg}"
     @show_hit_or_stay_buttons = false
     @play_again = true
   end
@@ -99,13 +99,40 @@ post '/new_player' do
     halt erb(:new_player)
   end
 
-  # #problem here with the backslash character for white space
-  # if user_input["/^[a-zA-Z]+$/"].nil?
-  #   @error = "Please use only a single name and only alpha numeric"
-  #   halt erb(:new_player)
-  # end
+  #problem here with the backslash character for white space
+  if (params[:player_name] =~ /^[a-z A-Z]+$/).nil?
+    @error = "Please use only letter when writing your name"
+    halt erb(:new_player)
+  end
 
+  session[:purse] = 500
   session[:player_name] = params[:player_name]
+  # redirect '/game'
+  redirect '/place_bet'
+end
+
+get '/place_bet' do
+  erb :place_bet
+end
+
+post '/place_bet' do
+  session[:bet_amount] = params[:bet_amount].to_i
+
+  if (params[:bet_amount] =~ /^\d+$/).nil?
+    @error = "Must be a digit"
+    halt erb :place_bet
+  end
+
+  if params[:bet_amount].to_i <= 0
+    @error = "Bet must be a number greater than 0"
+    halt erb :place_bet
+  end
+
+  if session[:bet_amount] > session[:purse]
+    @error = "Bet amount exceeds purse"
+    halt erb :place_bet
+  end
+
   redirect '/game'
 end
 
@@ -139,7 +166,8 @@ post '/game/player/hit' do
   if player_total > BLACKJACK_AMOUNT
     loser!("#{session[:player_name]} busted at #{player_total}.")
   end
-  erb :game, layout: false
+  erb :game
+  # , layout: false
 end
 
 post '/game/player/stay' do

@@ -1,12 +1,18 @@
   <div id="game">
     <h1>Blackjack!</h1>
-    <p>Welcome <%= session[:player_name] %>!</p>
+    <p>Welcome <%= session[:player_name] %>! </p>
+    <p>You have bet <%= session[:bet_amount] %></p>
+    <!-- <p>You have <%= session[:purse] - session[:bet_amount] %> in your bank</p> -->
     <% if @play_again %>
-      <p>
-        <strong>Play again?</strong>
-        <a href="/game" class="btn btn-primary">Yes</a>
-        <a href="/game_over" class="btn">No</a>
-      </p>
+      <% if session[:purse] == 0 %>
+        <p>No more chips left, <a href="/new_player">Start over</a></p>
+      <% else %>
+        <p>
+          <strong>Play again?</strong>
+          <a href="/place_bet" class="btn btn-primary">Yes</a>
+          <a href="/game_over" class="btn">No</a>
+        </p>
+      <% end %>
     <% end %>
     <div class="well" id="dealer_area">
       <h4>Dealer's cards:</h4>
